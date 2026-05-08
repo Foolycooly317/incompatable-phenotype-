@@ -7,14 +7,12 @@ const matchToast = document.getElementById("matchToast");
 const referenceGrid = document.getElementById("referenceGrid");
 
 const referenceFiles = [
-  "references/ref1.jpg",
-  "references/ref2.jpg",
-  "references/ref3.jpg",
-  "references/ref4.jpg",
-  "references/ref5.jpg",
-  "references/ref6.jpg",
-  "references/ref7.jpg",
-  "references/ref8.jpg"
+  "references/ref1.png",
+  "references/ref2.png",
+  "references/ref3.png",
+  "references/ref4.png",
+  "references/ref5.png",
+  "references/ref6.png"
 ];
 
 const MATCH_POPUP_THRESHOLD = 75;
@@ -49,11 +47,19 @@ function distance(a, b) {
 }
 
 function extractFeatures(landmarks) {
-  const faceHeight = distance(landmarks[10], landmarks[152]);
+  const faceHeight = distance(
+    landmarks[10],
+    landmarks[152]
+  );
+
   const features = {};
 
   for (const [name, pair] of Object.entries(landmarkPairs)) {
-    const value = distance(landmarks[pair[0]], landmarks[pair[1]]);
+    const value = distance(
+      landmarks[pair[0]],
+      landmarks[pair[1]]
+    );
+
     features[name] = value / faceHeight;
   }
 
@@ -65,7 +71,10 @@ function averageReferenceFeatures(profiles) {
 
   for (const key of Object.keys(profiles[0])) {
     average[key] =
-      profiles.reduce((sum, profile) => sum + profile[key], 0) / profiles.length;
+      profiles.reduce(
+        (sum, profile) => sum + profile[key],
+        0
+      ) / profiles.length;
   }
 
   return average;
@@ -77,15 +86,25 @@ function compareFeatures(ref, test) {
   let details = [];
 
   for (const key of Object.keys(ref)) {
-    const difference = Math.abs(ref[key] - test[key]);
-    const similarity = Math.max(0, 100 - difference * 500);
+    const difference = Math.abs(
+      ref[key] - test[key]
+    );
+
+    const similarity = Math.max(
+      0,
+      100 - difference * 500
+    );
 
     totalDifference += difference;
     count++;
 
     let label = "weak";
-    if (similarity >= 80) label = "strong";
-    else if (similarity >= 60) label = "partial";
+
+    if (similarity >= 80) {
+      label = "strong";
+    } else if (similarity >= 60) {
+      label = "partial";
+    }
 
     details.push({
       feature: key.replaceAll("_", " "),
@@ -94,8 +113,13 @@ function compareFeatures(ref, test) {
     });
   }
 
-  const averageDifference = totalDifference / count;
-  const overall = Math.max(0, 100 - averageDifference * 500);
+  const averageDifference =
+    totalDifference / count;
+
+  const overall = Math.max(
+    0,
+    100 - averageDifference * 500
+  );
 
   return {
     overall: overall.toFixed(1),
@@ -105,6 +129,7 @@ function compareFeatures(ref, test) {
 
 function showMatchToast(message) {
   matchToast.textContent = message;
+
   matchToast.classList.add("show");
 
   setTimeout(() => {
@@ -115,10 +140,13 @@ function showMatchToast(message) {
 function loadImage(src) {
   return new Promise((resolve, reject) => {
     const img = new Image();
+
     img.crossOrigin = "anonymous";
 
     img.onload = () => resolve(img);
-    img.onerror = () => reject(`Could not load ${src}`);
+
+    img.onerror = () =>
+      reject(`Could not load ${src}`);
 
     img.src = src;
   });
@@ -126,19 +154,27 @@ function loadImage(src) {
 
 function loadImageToCanvas(img) {
   const canvas = document.createElement("canvas");
+
   const ctx = canvas.getContext("2d");
 
-  canvas.width = img.naturalWidth || img.width;
-  canvas.height = img.naturalHeight || img.height;
+  canvas.width =
+    img.naturalWidth || img.width;
+
+  canvas.height =
+    img.naturalHeight || img.height;
 
   ctx.drawImage(img, 0, 0);
+
   return canvas;
 }
 
 async function getLandmarksFromImage(img) {
   return new Promise((resolve) => {
     faceMesh.onResults((results) => {
-      if (!results.multiFaceLandmarks || results.multiFaceLandmarks.length === 0) {
+      if (
+        !results.multiFaceLandmarks ||
+        results.multiFaceLandmarks.length === 0
+      ) {
         resolve(null);
         return;
       }
@@ -147,7 +183,10 @@ async function getLandmarksFromImage(img) {
     });
 
     const canvas = loadImageToCanvas(img);
-    faceMesh.send({ image: canvas });
+
+    faceMesh.send({
+      image: canvas
+    });
   });
 }
 
@@ -167,20 +206,27 @@ async function setupFaceMesh() {
 }
 
 async function loadReferenceImages() {
-  scoreBox.innerHTML = "Loading reference faces...";
+  scoreBox.innerHTML =
+    "Loading reference faces...";
 
   for (const file of referenceFiles) {
     try {
       const img = await loadImage(file);
 
-      const preview = document.createElement("img");
+      const preview =
+        document.createElement("img");
+
       preview.src = file;
+
       referenceGrid.appendChild(preview);
 
-      const landmarks = await getLandmarksFromImage(img);
+      const landmarks =
+        await getLandmarksFromImage(img);
 
       if (landmarks) {
-        referenceProfiles.push(extractFeatures(landmarks));
+        referenceProfiles.push(
+          extractFeatures(landmarks)
+        );
       }
     } catch (err) {
       console.warn(err);
@@ -188,60 +234,96 @@ async function loadReferenceImages() {
   }
 
   if (referenceProfiles.length === 0) {
-    scoreBox.innerHTML = "No usable faces found in reference images.";
+    scoreBox.innerHTML =
+      "No usable faces found in reference images.";
+
     return;
   }
 
-  referenceFeatures = averageReferenceFeatures(referenceProfiles);
-  scoreBox.innerHTML = `Loaded ${referenceProfiles.length} reference face(s). Drop an image.`;
+  referenceFeatures =
+    averageReferenceFeatures(
+      referenceProfiles
+    );
+
+  scoreBox.innerHTML =
+    `Loaded ${referenceProfiles.length} reference face(s). Drop an image.`;
 }
 
 async function analyzeTestImage() {
   if (!referenceFeatures) {
-    scoreBox.innerHTML = "Reference faces are not loaded yet.";
+    scoreBox.innerHTML =
+      "Reference faces not loaded yet.";
+
     return;
   }
 
   scoreBox.innerHTML = "Analyzing...";
+
   detailsBox.innerHTML = "";
 
-  const landmarks = await getLandmarksFromImage(testImg);
+  const landmarks =
+    await getLandmarksFromImage(testImg);
 
   if (!landmarks) {
-    scoreBox.innerHTML = "No face found in test image.";
+    scoreBox.innerHTML =
+      "No face found in image.";
+
     return;
   }
 
-  const testFeatures = extractFeatures(landmarks);
-  const result = compareFeatures(referenceFeatures, testFeatures);
+  const testFeatures =
+    extractFeatures(landmarks);
+
+  const result = compareFeatures(
+    referenceFeatures,
+    testFeatures
+  );
 
   let scoreClass = "low";
-  if (result.overall >= 75) scoreClass = "match";
-  else if (result.overall >= 55) scoreClass = "mid";
 
-  scoreBox.innerHTML =
-    `<span class="${scoreClass}">Overall Similarity: ${result.overall}%</span>`;
-
-  if (parseFloat(result.overall) >= MATCH_POPUP_THRESHOLD) {
-    showMatchToast(`Similar face structure detected: ${result.overall}% match`);
+  if (result.overall >= 75) {
+    scoreClass = "match";
+  } else if (result.overall >= 55) {
+    scoreClass = "mid";
   }
 
-  detailsBox.innerHTML = result.details.map(item => `
-    <p>
-      <b>${item.feature}</b>: ${item.similarity}%
-      <span class="${
-        item.label === "strong" ? "match" :
-        item.label === "partial" ? "mid" :
-        "low"
-      }">
-        ${item.label} match
-      </span>
-    </p>
-  `).join("");
+  scoreBox.innerHTML =
+    `<span class="${scoreClass}">
+      Overall Similarity: ${result.overall}%
+    </span>`;
+
+  if (
+    parseFloat(result.overall) >=
+    MATCH_POPUP_THRESHOLD
+  ) {
+    showMatchToast(
+      `Similar face structure detected (${result.overall}% match)`
+    );
+  }
+
+  detailsBox.innerHTML =
+    result.details.map(item => `
+      <p>
+        <b>${item.feature}</b>:
+        ${item.similarity}%
+
+        <span class="${
+          item.label === "strong"
+            ? "match"
+            : item.label === "partial"
+            ? "mid"
+            : "low"
+        }">
+          ${item.label} match
+        </span>
+      </p>
+    `).join("");
 }
 
 function handleFile(file) {
-  const url = URL.createObjectURL(file);
+  const url =
+    URL.createObjectURL(file);
+
   testImg.src = url;
 
   testImg.onload = () => {
@@ -249,36 +331,64 @@ function handleFile(file) {
   };
 }
 
-dropZone.addEventListener("click", () => fileInput.click());
+dropZone.addEventListener(
+  "click",
+  () => fileInput.click()
+);
 
-fileInput.addEventListener("change", () => {
-  if (fileInput.files.length > 0) {
-    handleFile(fileInput.files[0]);
+fileInput.addEventListener(
+  "change",
+  () => {
+    if (fileInput.files.length > 0) {
+      handleFile(fileInput.files[0]);
+    }
   }
-});
+);
 
-dropZone.addEventListener("dragover", (e) => {
-  e.preventDefault();
-  dropZone.classList.add("dragover");
-});
+dropZone.addEventListener(
+  "dragover",
+  (e) => {
+    e.preventDefault();
 
-dropZone.addEventListener("dragleave", () => {
-  dropZone.classList.remove("dragover");
-});
-
-dropZone.addEventListener("drop", (e) => {
-  e.preventDefault();
-  dropZone.classList.remove("dragover");
-
-  const file = e.dataTransfer.files[0];
-
-  if (file && file.type.startsWith("image/")) {
-    handleFile(file);
+    dropZone.classList.add(
+      "dragover"
+    );
   }
-});
+);
+
+dropZone.addEventListener(
+  "dragleave",
+  () => {
+    dropZone.classList.remove(
+      "dragover"
+    );
+  }
+);
+
+dropZone.addEventListener(
+  "drop",
+  (e) => {
+    e.preventDefault();
+
+    dropZone.classList.remove(
+      "dragover"
+    );
+
+    const file =
+      e.dataTransfer.files[0];
+
+    if (
+      file &&
+      file.type.startsWith("image/")
+    ) {
+      handleFile(file);
+    }
+  }
+);
 
 async function startApp() {
   await setupFaceMesh();
+
   await loadReferenceImages();
 }
 
