@@ -1,1 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Face Structure Matcher</title>
+  <link rel="stylesheet" href="style.css" />
 
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/face_mesh.js"></script>
+</head>
+<body>
+  <div class="app">
+    <h1>Face Structure Matcher</h1>
+    <p>Drag and drop a face image to compare it to your reference set.</p>
+
+    <div class="panels">
+      <div class="card">
+        <h2>Reference Set</h2>
+        <div id="referenceGrid" class="reference-grid"></div>
+      </div>
+
+      <div class="card drop-zone" id="dropZone">
+        <h2>Drop Image Here</h2>
+        <p>or click to choose a file</p>
+        <input type="file" id="fileInput" accept="image/*" hidden />
+        <img id="testImg" alt="" />
+      </div>
+    </div>
+
+    <div class="result">
+      <h2>Results</h2>
+      <div id="score">Loading reference images...</div>
+      <div id="details"></div>
+    </div>
+  </div>
+
+  <div id="matchToast">Similar face structure detected</div>
+
+  <script src="app.js"></script>
+</body>
+</html>
