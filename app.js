@@ -7,8 +7,6 @@ const matchToast = document.getElementById("matchToast");
 const referenceGrid = document.getElementById("referenceGrid");
 
 const referenceFiles = [
-  "refrences/ref3.png",
-  "refrences/ref6.png",
   "refrences/ref7.jpg",
   "refrences/ref8.jpg",
   "refrences/ref9.jpg",
