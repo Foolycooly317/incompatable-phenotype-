@@ -7,12 +7,13 @@ const matchToast = document.getElementById("matchToast");
 const referenceGrid = document.getElementById("referenceGrid");
 
 const referenceFiles = [
-  "references/ref1.png",
-  "references/ref2.png",
-  "references/ref3.png",
-  "references/ref4.png",
-  "references/ref5.png",
-  "references/ref6.png"
+  "refrences/ref3.png",
+  "refrences/ref6.png",
+  "refrences/ref7.jpg",
+  "refrences/ref8.jpg",
+  "refrences/ref9.jpg",
+  "refrences/ref10.jpg",
+  "refrences/ref11.jpg"
 ];
 
 const MATCH_POPUP_THRESHOLD = 75;
